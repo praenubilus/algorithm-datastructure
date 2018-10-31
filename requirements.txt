@@ -1,0 +1,5 @@
+pytest
+pytest-doctestplus
+autopep8
+pylint
+rope

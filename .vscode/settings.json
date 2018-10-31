@@ -1,0 +1,31 @@
+{
+    "files.exclude": {
+        "**/.git": true,
+        "**/.svn": true,
+        "**/.hg": true,
+        "**/CVS": true,
+        "**/.venv": true,
+        "**/requirements.txt": true,
+        "**/venv_create.sh": true,
+        // "**/__pycache__": true,
+        // "**/.pytest_cache": true,
+    },
+    "python.pythonPath": "${workspaceRoot}/.venv/bin/python",
+    "python.venvFolders": [
+        "envs",
+        ".pyenv",
+        ".direnv",
+        ".venv"
+    ],
+    "python.linting.pylintArgs": [
+        "--init-hook",
+        "import sys;sys.path.append(.)"
+    ],
+    "python.unitTest.pyTestArgs": [
+        "."
+    ],
+    "python.unitTest.unittestEnabled": false,
+    "python.unitTest.nosetestsEnabled": false,
+    "python.unitTest.pyTestEnabled": true,
+    "python.unitTest.pyTestPath": "${workspaceRoot}/.venv/bin/pytest",
+}
