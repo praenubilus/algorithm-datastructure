@@ -100,3 +100,11 @@ gradle-app.setting
 *.zip
 *.tar.gz
 *.rar
+
+
+# whitelist the junit related jar files
+!apiguardian-api.jar  
+!junit-jupiter-api.jar  
+!junit-jupiter-engine.jar
+!junit-jupiter-params.jar
+!junit-platform-console-standalone.jar
