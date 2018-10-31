@@ -18,7 +18,7 @@ for f in ./Test*.java; do
     ## Check if the glob gets expanded to existing files.
     ## If not, f here will be exactly the pattern above
     ## and the exists test will evaluate to false.
-    if [ -e "$f" ]; then
+    if [ -e "$f" ] &&  [ "$f" != "./Testable.java" ]; then
         src_file="$f"
     fi
     ## This is all we needed to know, so we can break after the first iteration
