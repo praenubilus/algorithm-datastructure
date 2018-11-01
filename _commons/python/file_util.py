@@ -7,10 +7,16 @@ def generate_path(*paths)->str:
     return path
 
 
-def generate_pythonic_name(fname_with_spaces: str)->str:
+def make_pythonic_name(fname_with_spaces: str)->str:
     names = fname_with_spaces.strip().split(' ')
     py_fname = '_'.join([n.lower() for n in names])
     return py_fname
+
+
+def make_java_class_name(pythonic_fname: str)->str:
+    names = fname_with_spaces.split('_')
+    java_fname = '_'.join([n.capitalize() for n in names])
+    return java_fname
 
 
 def copy_files(src_dir, dst_dir, ext='java'):

@@ -45,7 +45,7 @@ args = parser.parse_args()
 
 def main():
     problem_parent_dir = args.problem_directory
-    problem_name = fu.generate_pythonic_name(args.problem_name)
+    problem_name = fu.make_pythonic_name(args.problem_name)
     ln_id = args.lintcode_id
     lc_id = args.leetcode_id
     problem_tags = args.problem_tags
