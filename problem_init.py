@@ -1,6 +1,5 @@
 import argparse as ap
 import os
-import shutil
 import _commons.python.file_util as fu
 
 
@@ -25,6 +24,8 @@ parser.add_argument('-lcl', '--leetcode-link', dest='leetcode_link', default="",
                     help="the problem link on leetcode")
 parser.add_argument('-lnl', '--lintcode-link', dest='lintcode_link', default="",
                     help="the problem link on lintcode")
+parser.add_argument('-tt', '--template-type', dest='template_type', default="pythonjava",
+                    help="the types of template script will generate")
 
 
 PROBLEM_TEMPLATE_DIR = fu.generate_path(
@@ -37,7 +38,13 @@ PYTHON_TEST_TEMPLATE = 'test_solution_template'
 PYTHON_LINE_COMMENT_INITIAL = '# '
 JAVA_SOLUTION_TEMPLATE = 'SolutionTemplate'
 JAVA_TEST_TEMPLATE = 'TestSolutionTemplate'
-
+README_TEMPLATE = 'README.md'
+README_TEMPLATE_TITLE = "Problem Name"
+README_TEMPLATE_SOURCE = "Source"
+README_TEMPLATE_TAG = "Tags"
+README_TEMPLATE_COMPANY = "Company"
+README_TEMPLATE_DESCRIPTION = "Description"
+QUESTION_NUMBER_ZEROS = 4
 
 args = parser.parse_args()
 
@@ -49,11 +56,19 @@ args = parser.parse_args()
 def main():
     problem_parent_dir = args.problem_directory
     problem_name = fu.make_pythonic_name(args.problem_name)
-    ln_id = args.lintcode_id
-    lc_id = args.leetcode_id
+    ln_id: str = args.lintcode_id
+    lc_id: str = args.leetcode_id
     problem_tags = args.problem_tags
     problem_companies = args.problem_company
-    problem_link = args.leetcode_link
+    leetcode_link = args.leetcode_link
+    lintcode_link = args.lintcode_link
+    template_type = args.template_type
+
+    # format the problem number with unified format which have leading zeros
+    if ln_id:
+        ln_id = lc_id.zfill(QUESTION_NUMBER_ZEROS)
+    if lc_id:
+        lc_id = lc_id.zfill(QUESTION_NUMBER_ZEROS)
 
     # create target directory
     problem_dir = create_dir_from_template(
@@ -61,12 +76,81 @@ def main():
     # cleanup for cache files and initialization
     directory_init(problem_dir)
 
-    # Python template update
+    # Python template update, by default, python will always generate
     update_python_template(problem_dir, problem_name)
     # Java template update
-    update_java_template(problem_dir, fu.make_java_class_name(problem_name))
+    # java can be omitted if it's not in template type
+    if 'java' in template_type:
+        update_java_template(
+            problem_dir, fu.make_java_class_name(problem_name))
+    else:
+        fu.delete_dir(fu.generate_path(problem_dir, 'java'))
 
     # README template update
+    update_readme_template(problem_dir,
+                           fu.make_title_name(problem_name),
+                           ln_id=ln_id,
+                           lc_id=lc_id,
+                           leetcode_link=leetcode_link,
+                           lintcode_link=lintcode_link,
+                           problem_tags=problem_tags,
+                           problem_companies=problem_companies)
+
+
+def update_readme_template(target_dir: str, name: str, **args):
+
+    # 1. processing solution file
+    readme_file_path = fu.generate_path(
+        target_dir, README_TEMPLATE)
+    with open(readme_file_path, 'r') as file:
+        data = file.readlines()
+
+    # create new list in case delete on iterating
+    output = []
+    valid_id_lc = True if args.get('ln_id', False) else False
+    valid_source_lc = True if args.get('leetcode_link', False) else False
+    valid_id_lin = True if args.get('lc_id', False) else False
+    valid_source_lin = True if args.get('lintcode_link', False) else False
+    valid_tags = True if args.get('problem_tags', False) else False
+    valid_companies = True if args.get('problem_companies', False) else False
+
+    for idx, content in enumerate(list(data)):
+
+        # update Template Title name with Capitalized String
+        if README_TEMPLATE_TITLE in content:
+            content = content.replace(README_TEMPLATE_TITLE, name)
+
+        if README_TEMPLATE_SOURCE in content:
+            if valid_id_lin:
+                if valid_source_lin:
+                    content += "["
+                content += "Lintcode "+args.get('ln_id')+". "+name
+                if valid_source_lin:
+                    content += "]({link})".format(link=args.get('lintcode_link'))
+                content += '\n'
+            if valid_id_lc:
+                if valid_source_lc:
+                    content += "["
+                content += "Leetcode "+args.get('lc_id')+". "+name
+                if valid_source_lc:
+                    content += "]({link})".format(link=args.get('leetcode_link'))
+                content += '\n'
+
+        if README_TEMPLATE_TAG in content and valid_tags:
+            content += ','.join([' **{tag}**'.format(tag=t)
+                                 for t in args.get('problem_tags')])
+            content += '\n'
+
+        if README_TEMPLATE_COMPANY in content and valid_companies:
+            content += ','.join([' **{comp}**'.format(comp=c)
+                                 for c in args.get('problem_companies')])
+            content += '\n'
+
+        output.append(content)
+
+    # and write everything back
+    with open(readme_file_path, 'w') as file:
+        file.writelines(output)
 
 
 def update_java_template(target_dir: str, name: str):
@@ -176,48 +260,6 @@ def update_python_template(target_dir: str, name: str):
     # 3. clean up, delete the old template files
     fu.del_file(sol_file_path)
     fu.del_file(test_file_path)
-
-
-def update_readme_template():
-    # edit content
-    with open(readme_file_path, 'r') as file:
-        data = file.readlines()
-
-    line_num = 0
-    for line in list(data):  # create new list in case delete on iterating
-        if line.lower().startswith('tags:'):  # this line contains all tags
-            if problem_tags is not None:  # add all tags
-                line = 'Tags:'
-                for tag in problem_tags:
-                    line += ' __' + tag + '__,'
-            if problem_companies is not None:  # add company tags
-                for company in problem_companies:
-                    line += ' __' + company + '__,'
-
-            data[line_num] = line[:-1]
-
-        if line.lower().startswith('# brief intro'):
-            if problem_id is not None:
-                # edit File Title to problem name
-                data[line_num] = '# ' + problem_id + '. ' + problem_name + '\n'
-            else:
-                data[2] = '# ' + problem_name + '\n'
-
-        if 'leetcode qxxx' in line:
-            if problem_link is not None:
-                line = line.replace('https://www.google.com', problem_link)
-            if problem_id is not None:
-                line = line.replace('qxxx', ('' + problem_id).zfill(3))
-
-            data[line_num] = line
-            # delete the 'from CCI page xxx' line, all following lines will reduce number by 1
-            del data[line_num - 1]
-
-        line_num += 1
-
-    # and write everything back
-    with open(readme_file_path, 'w') as file:
-        file.writelines(data)
 
 
 def directory_init(target_dir: str, init_python: bool = True, init_java: bool = False):
