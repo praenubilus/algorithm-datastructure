@@ -1,8 +1,17 @@
 {
     "configurations": [
         {
+            "name": "Python: Terminal (integrated)",
+            "type": "python",
+            "request": "launch",
+            "program": "${file}",
+            "console": "integratedTerminal",
+            "args": [
+            ],
+        },
+        {
             "type": "java",
-            "name": "Debug (Launch)",
+            "name": "Java: Debug (Launch)",
             "request": "launch",
             "cwd": "${workspaceFolder}",
             "console": "internalConsole",
