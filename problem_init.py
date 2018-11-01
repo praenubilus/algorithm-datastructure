@@ -35,6 +35,9 @@ PYTHON_INIT_TEMPLATE_PATH = fu.generate_path(
 PYTHON_SOLUTION_TEMPLATE = 'solution_template'
 PYTHON_TEST_TEMPLATE = 'test_solution_template'
 PYTHON_LINE_COMMENT_INITIAL = '# '
+JAVA_SOLUTION_TEMPLATE = 'SolutionTemplate'
+JAVA_TEST_TEMPLATE = 'TestSolutionTemplate'
+
 
 args = parser.parse_args()
 
@@ -61,7 +64,63 @@ def main():
     # Python template update
     update_python_template(problem_dir, problem_name)
     # Java template update
+    update_java_template(problem_dir, fu.make_java_class_name(problem_name))
+
     # README template update
+
+
+def update_java_template(target_dir: str, name: str):
+    sol_file_dir = fu.generate_path(target_dir, 'java')
+    # write contents to new solution file with name based on problem name
+    # the format is CamelCase(Egyptian Style) for name, then preppend to the 'Solution'
+    new_sol_name = name+'Solution'
+
+    # 1. processing solution file
+    sol_file_path = fu.generate_path(
+        sol_file_dir, JAVA_SOLUTION_TEMPLATE+'.java')
+    with open(sol_file_path, 'r') as file:
+        data = file.readlines()
+
+    # create new list in case delete on iterating
+    output = []
+    for idx, content in enumerate(list(data)):
+        # java public class name must match the file name, rename the solution class
+        if JAVA_SOLUTION_TEMPLATE in content:
+            content = content.replace(JAVA_SOLUTION_TEMPLATE, new_sol_name)
+        output.append(content)
+    # rename the solution file name
+    new_sol_fpath = fu.generate_path(sol_file_dir, new_sol_name+'.java')
+    with open(new_sol_fpath, 'w') as file:
+        file.writelines(output)
+
+    # 2. processing unit test file
+    test_file_dir = sol_file_dir
+    test_file_path = fu.generate_path(
+        test_file_dir, JAVA_TEST_TEMPLATE+'.java')
+    with open(test_file_path, 'r') as file:
+        data = file.readlines()
+
+    # write contents to new solution file with name based on problem name
+    # the format is CamelCase(Egyptian Style) for name, then append to the 'Test'
+    new_test_name = 'Test'+new_sol_name
+
+    # create new list in case delete on iterating
+    output = []
+    for idx, content in enumerate(list(data)):
+        # java public class name must match the file name, rename the solution class
+        if JAVA_SOLUTION_TEMPLATE in content:
+            content = content.replace(JAVA_SOLUTION_TEMPLATE, new_sol_name)
+        if JAVA_TEST_TEMPLATE in content:
+            content = content.replace(JAVA_TEST_TEMPLATE, new_test_name)
+        output.append(content)
+
+    new_test_fpath = fu.generate_path(test_file_dir, new_test_name+'.java')
+    with open(new_test_fpath, 'w') as file:
+        file.writelines(output)
+
+    # 3. clean up, delete the old template files
+    fu.del_file(sol_file_path)
+    fu.del_file(test_file_path)
 
 
 def update_python_template(target_dir: str, name: str):
@@ -108,7 +167,7 @@ def update_python_template(target_dir: str, name: str):
         output.append(content)
 
     # write contents to new solution file with name based on problem name
-    # the format is get the initial of each problem word name, then append to the 'solution_'
+    # the format is get the initial of each problem word name, then append to the 'test_solution_'
     new_test_name = 'test_'+new_sol_name
     new_test_fpath = fu.generate_path(test_file_dir, new_test_name+'.py')
     with open(new_test_fpath, 'w') as file:
@@ -117,10 +176,6 @@ def update_python_template(target_dir: str, name: str):
     # 3. clean up, delete the old template files
     fu.del_file(sol_file_path)
     fu.del_file(test_file_path)
-
-
-def update_java_template():
-    pass
 
 
 def update_readme_template():
