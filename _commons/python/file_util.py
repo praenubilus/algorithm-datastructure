@@ -14,8 +14,8 @@ def make_pythonic_name(fname_with_spaces: str)->str:
 
 
 def make_java_class_name(pythonic_fname: str)->str:
-    names = fname_with_spaces.split('_')
-    java_fname = '_'.join([n.capitalize() for n in names])
+    names = pythonic_fname.split('_')
+    java_fname = ''.join([n.capitalize() for n in names])
     return java_fname
 
 
