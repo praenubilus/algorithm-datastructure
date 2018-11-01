@@ -19,6 +19,12 @@ def make_java_class_name(pythonic_fname: str)->str:
     return java_fname
 
 
+def make_title_name(pythonic_fname: str)->str:
+    names = pythonic_fname.split('_')
+    title_name = ' '.join([n.capitalize() for n in names])
+    return title_name
+
+
 def copy_files(src_dir, dst_dir, ext='java'):
     file_list = [f for f in os.listdir(src_dir) if f.endswith('.' + ext)]
     for file in file_list:
